@@ -66,6 +66,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Addon.cs" />
+    <Compile Include="PdfCompareCommand.cs" />
+    <Compile Include="PdfIsPasswordCommand.cs" />
+    <Compile Include="PdfRemovePageCommand.cs" />
+    <Compile Include="PdfAddPageCommand.cs" />
+    <Compile Include="PdfSaveCommand.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <EmbedResource Include="License.txt" />
     <None Include="app.config" />
     <!-- REMOVE IT
@@ -78,6 +88,20 @@
     <Compile Include="PdfOpenCommand.cs" />
     <Compile Include="PdfStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\*\lib\net40\BitMiracle.Docotic.Pdf.dll">
+      <Link>BitMiracle.Docotic.Pdf.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
