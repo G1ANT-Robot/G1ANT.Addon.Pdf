@@ -11,13 +11,11 @@ namespace G1ANT.Addon.PDF
     [Structure(Name = "pdf", AutoCreate = false, Tooltip = "PDF structure for maintaining pdf files")]
     public class PdfStructure : StructureTyped<PdfDocument>
     {
-
         private static class IndexNames
         {
             public const string Title = "title";
             public const string Author = "author";
             public const string PageCount = "pagecount";
-            public const string PasswordProtected = "passwordprotected";
         }
 
         public PdfStructure(object value, string format = null, AbstractScripter scripter = null)
@@ -37,7 +35,6 @@ namespace G1ANT.Addon.PDF
             Indexes.Add(IndexNames.Author);
             Indexes.Add(IndexNames.Title);
             Indexes.Add(IndexNames.PageCount);
-            Indexes.Add(IndexNames.PasswordProtected);
         }
 
         public override Structure Get(string index = "")

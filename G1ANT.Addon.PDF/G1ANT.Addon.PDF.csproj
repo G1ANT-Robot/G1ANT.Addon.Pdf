@@ -67,7 +67,7 @@
   <ItemGroup>
     <Compile Include="Addon.cs" />
     <Compile Include="PdfCompareCommand.cs" />
-    <Compile Include="PdfIsPasswordCommand.cs" />
+    <Compile Include="PdfExtractTextCommand.cs" />
     <Compile Include="PdfRemovePageCommand.cs" />
     <Compile Include="PdfAddPageCommand.cs" />
     <Compile Include="PdfSaveCommand.cs" />

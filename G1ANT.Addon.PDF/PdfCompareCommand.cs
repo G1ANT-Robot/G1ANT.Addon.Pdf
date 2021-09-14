@@ -11,7 +11,6 @@ namespace G1ANT.Addon.PDF
     [Command(Name ="pdf.compare", Tooltip = "Chek if two pdf files are the same")]
     public class PdfCompareCommand : Command
     {
-
         public PdfCompareCommand(AbstractScripter scripter) : base(scripter)
         {
         }
@@ -34,8 +33,8 @@ namespace G1ANT.Addon.PDF
         public void Execute(Arguments arguments)
         {
             var standardDecryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
-
             var res = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value, standardDecryptionHandler);
+            
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new BooleanStructure(res, null, null));
         }
     }

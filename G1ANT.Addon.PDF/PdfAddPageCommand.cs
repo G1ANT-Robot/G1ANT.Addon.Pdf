@@ -21,13 +21,10 @@ namespace G1ANT.Addon.PDF
             public PdfStructure Pdf { get; set; }
         }
 
-
         public void Execute(Arguments arguments)
         {
             var pdf = arguments.Pdf.Value;
             pdf.AddPage();
         }
-
-
     }
 }

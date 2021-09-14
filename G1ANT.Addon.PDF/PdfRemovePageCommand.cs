@@ -11,7 +11,6 @@ namespace G1ANT.Addon.PDF
     [Command(Name = "pdf.removepage", Tooltip = "Removes given page")]
     public class PdfRemovePageCommand : Command
     {
-
         public PdfRemovePageCommand(AbstractScripter scripter) : base(scripter)
         {
         }

@@ -12,7 +12,6 @@ namespace G1ANT.Addon.PDF
     [Command(Name = "pdf.open", Tooltip = "Command using to open pdf document.")]
     public class PdfOpenCommand : Command
     {
-
         public PdfOpenCommand(AbstractScripter scripter) : base(scripter)
         {
         }
@@ -31,14 +30,12 @@ namespace G1ANT.Addon.PDF
 
         public void Execute(Arguments arguments)
         {
+            FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+         
+            var decryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
+            var pdfFile = new PdfDocument(fs, decryptionHandler);
 
-            using (FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.None))
-            {
-                var decryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
-                var pdfFile = new PdfDocument(fs, decryptionHandler);
-
-                Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, null));
-            }
+            Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, null));
         }
     }
 }

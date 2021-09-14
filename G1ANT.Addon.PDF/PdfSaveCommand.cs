@@ -29,7 +29,5 @@ namespace G1ANT.Addon.PDF
             var pdf = arguments.Pdf.Value;
             pdf.Save(arguments.Path.Value);
         }
-
-
     }
 }
