@@ -17,7 +17,7 @@ namespace G1ANT.Addon.PDF
 
         public class Arguments : CommandArguments
         {
-            [Argument(Name = "pdf", Required = true, Tooltip = "PDF structure to wich a new page will be added")]
+            [Argument(Name = "pdf", Required = true, Tooltip = "PDF structure from which the given page will be removed")]
             public PdfStructure Pdf { get; set; }
 
             [Argument(Name = "pagenumber", Required = true, Tooltip = "Page to remove. Starting from 1")]
@@ -27,13 +27,17 @@ namespace G1ANT.Addon.PDF
         public void Execute(Arguments arguments)
         {
             var pdf = arguments.Pdf.Value;
+            int pdfPageCount = pdf.PageCount;
 
             int pageToRemove = arguments.PageNumber.Value - 1;
             if (arguments.PageNumber.Value <= 0)
             {
                 throw new ArgumentException("Page number can't be smaller than 1");
             }
-            else
+            else if (arguments.PageNumber.Value > pdfPageCount)
+            {
+                throw new ArgumentException("Page number can't be bigger than number of pages");
+            } else
             {
                 pdf.RemovePage(pageToRemove);
             }

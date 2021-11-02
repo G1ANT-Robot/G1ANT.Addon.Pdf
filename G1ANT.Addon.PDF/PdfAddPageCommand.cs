@@ -8,7 +8,7 @@ using BitMiracle.Docotic.Pdf;
 
 namespace G1ANT.Addon.PDF
 {
-    [Command(Name = "pdf.addpage", Tooltip = "This command will add a new or given page to your pdf")]
+    [Command(Name = "pdf.addpage", Tooltip = "This command adds new page to the pdf document")]
     public class PdfAddPageCommand : Command
     {
         public PdfAddPageCommand(AbstractScripter scripter) : base(scripter)

@@ -8,7 +8,7 @@ using BitMiracle.Docotic.Pdf;
 
 namespace G1ANT.Addon.PDF
 {
-    [Command(Name ="pdf.compare", Tooltip = "Chek if two pdf files are the same")]
+    [Command(Name ="pdf.compare", Tooltip = "Check if two pdf files are the same")]
     public class PdfCompareCommand : Command
     {
         public PdfCompareCommand(AbstractScripter scripter) : base(scripter)
@@ -17,14 +17,14 @@ namespace G1ANT.Addon.PDF
 
         public class Arguments : CommandArguments
         {
-            [Argument(Name = "firstpdfpath", Required = true, Tooltip ="Path to first file to compare")]
+            [Argument(Name = "firstpdfpath", Required = true, Tooltip = "Path to the first pdf file")]
             public TextStructure FirstPdfPath { get; set; }
 
-            [Argument(Name = "secondpdfpath", Required = true, Tooltip ="Path to second file to compare")]
+            [Argument(Name = "secondpdfpath", Required = true, Tooltip ="Path to the second pdf file")]
             public TextStructure SecondPdfPath { get; set; }
 
             [Argument(Name = "password", Required = false, Tooltip = "Password to the file/files")]
-            public TextStructure Password { get; set; } = new TextStructure("");
+            public TextStructure Password { get; set; }
 
             [Argument(Name = "result", Required = false, Tooltip = "Returns true if docuemnts are equal")]
             public VariableStructure Result { get; set; } = new VariableStructure("result");
@@ -32,10 +32,18 @@ namespace G1ANT.Addon.PDF
 
         public void Execute(Arguments arguments)
         {
-            var standardDecryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
-            var res = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value, standardDecryptionHandler);
-            
-            Scripter.Variables.SetVariableValue(arguments.Result.Value, new BooleanStructure(res, null, null));
+            bool result;
+
+            if (arguments.Password == null)
+            {
+                result = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value);
+            }
+            else
+            {
+                var standardDecryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
+                result = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value, standardDecryptionHandler);
+            }
+            Scripter.Variables.SetVariableValue(arguments.Result.Value, new BooleanStructure(result, null, null));
         }
     }
 }

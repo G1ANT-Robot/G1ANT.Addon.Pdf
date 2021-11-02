@@ -16,26 +16,26 @@ namespace G1ANT.Addon.PDF
         {
         }
 
-        public class Arguments: CommandArguments
+        public class Arguments : CommandArguments
         {
             [Argument(Name = "path", Required = true, Tooltip = "Path to file")]
             public TextStructure Path { get; set; }
 
             [Argument(Name = "password", Required = false, Tooltip = "Password to file")]
-            public TextStructure Password { get; set; } = new TextStructure("");
+            public TextStructure Password { get; set; }
 
-            [Argument(Name = "result", Required =false, Tooltip = "Returns PDF structure")]
+            [Argument(Name = "result", Required = false, Tooltip = "Returns PDF structure")]
             public VariableStructure Result { get; set; } = new VariableStructure("result");
         }
 
         public void Execute(Arguments arguments)
         {
             FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-         
-            var decryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
-            var pdfFile = new PdfDocument(fs, decryptionHandler);
 
-            Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, null));
+            var standardDecryptionHandler = arguments.Password != null ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
+            var pdfFile = standardDecryptionHandler == null ? new PdfDocument(fs) : new PdfDocument(fs, standardDecryptionHandler);
+
+            Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, Scripter));
         }
     }
 }
