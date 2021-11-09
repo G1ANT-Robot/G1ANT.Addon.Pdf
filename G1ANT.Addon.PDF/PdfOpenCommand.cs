@@ -32,8 +32,9 @@ namespace G1ANT.Addon.PDF
         {
             FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-            var standardDecryptionHandler = arguments.Password != null ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
+            var standardDecryptionHandler = !string.IsNullOrEmpty(arguments.Password?.Value) ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
             var pdfFile = standardDecryptionHandler == null ? new PdfDocument(fs) : new PdfDocument(fs, standardDecryptionHandler);
+
 
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, Scripter));
         }

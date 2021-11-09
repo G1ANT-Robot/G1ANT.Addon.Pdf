@@ -17,11 +17,11 @@ namespace G1ANT.Addon.PDF
 
         public class Arguments : CommandArguments
         {
-            [Argument(Name = "firstpdfpath", Required = true, Tooltip = "Path to the first pdf file")]
-            public TextStructure FirstPdfPath { get; set; }
+            [Argument(Name = "path1", Required = true, Tooltip = "Path to the first pdf")]
+            public TextStructure Path1 { get; set; }
 
-            [Argument(Name = "secondpdfpath", Required = true, Tooltip ="Path to the second pdf file")]
-            public TextStructure SecondPdfPath { get; set; }
+            [Argument(Name = "path2", Required = true, Tooltip ="Path to the second pdf")]
+            public TextStructure Path2 { get; set; }
 
             [Argument(Name = "password", Required = false, Tooltip = "Password to the file/files")]
             public TextStructure Password { get; set; }
@@ -36,12 +36,12 @@ namespace G1ANT.Addon.PDF
 
             if (arguments.Password == null)
             {
-                result = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value);
+                result = PdfDocument.DocumentsAreEqual(arguments.Path1.Value, arguments.Path2.Value);
             }
             else
             {
                 var standardDecryptionHandler = new PdfStandardDecryptionHandler(arguments.Password.Value);
-                result = PdfDocument.DocumentsAreEqual(arguments.FirstPdfPath.Value, arguments.SecondPdfPath.Value, standardDecryptionHandler);
+                result = PdfDocument.DocumentsAreEqual(arguments.Path1.Value, arguments.Path2.Value, standardDecryptionHandler);
             }
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new BooleanStructure(result, null, null));
         }

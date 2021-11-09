@@ -36,12 +36,7 @@ namespace G1ANT.Addon.PDF
             string ownerPassword;
 
             ownerPassword = arguments.OwnerPassword != null ? arguments.OwnerPassword.Value : string.Empty;
-           
-            var encryptionHandler = arguments.Password == null ? null : new PdfStandardEncryptionHandler(ownerPassword, arguments.Password.Value);
-            if (encryptionHandler != null)
-            {
-                pdf.SaveOptions.EncryptionHandler = encryptionHandler;
-            }
+            pdf.SaveOptions.EncryptionHandler = string.IsNullOrEmpty(arguments.Password?.Value) ? null : new PdfStandardEncryptionHandler(ownerPassword, arguments.Password.Value);
             pdf.Save(arguments.Path.Value);
         }
     }
