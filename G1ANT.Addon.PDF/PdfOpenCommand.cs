@@ -31,10 +31,10 @@ namespace G1ANT.Addon.PDF
         public void Execute(Arguments arguments)
         {
 
-            using (FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var fileStream = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var memoryStream = new MemoryStream();
-                fs.CopyTo(memoryStream);
+                fileStream.CopyTo(memoryStream);
                 var standardDecryptionHandler = !string.IsNullOrEmpty(arguments.Password?.Value) ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
                 var pdfFile = standardDecryptionHandler == null ? new PdfDocument(memoryStream) : new PdfDocument(memoryStream, standardDecryptionHandler);
 
