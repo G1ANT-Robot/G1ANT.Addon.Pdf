@@ -30,14 +30,16 @@ namespace G1ANT.Addon.PDF
 
         public void Execute(Arguments arguments)
         {
-            MemoryStream memoryStream = new MemoryStream();
+
             using (FileStream fs = File.Open(arguments.Path.Value, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                var memoryStream = new MemoryStream();
                 fs.CopyTo(memoryStream);
+                var standardDecryptionHandler = !string.IsNullOrEmpty(arguments.Password?.Value) ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
+                var pdfFile = standardDecryptionHandler == null ? new PdfDocument(memoryStream) : new PdfDocument(memoryStream, standardDecryptionHandler);
 
-            var standardDecryptionHandler = !string.IsNullOrEmpty(arguments.Password?.Value) ? new PdfStandardDecryptionHandler(arguments.Password.Value) : null;
-            var pdfFile = standardDecryptionHandler == null ? new PdfDocument(memoryStream) : new PdfDocument(memoryStream, standardDecryptionHandler);
-
-            Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, Scripter));
+                Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(pdfFile, null, Scripter));
+            }
         }
     }
 }
