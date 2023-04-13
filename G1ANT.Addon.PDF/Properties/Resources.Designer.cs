@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace G1ANT.Addon.PDF.Properties {
+namespace G1ANT.Addon.Pdf.Properties {
     using System;
     
     

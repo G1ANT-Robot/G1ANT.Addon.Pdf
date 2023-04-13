@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BitMiracle.Docotic.Pdf, Version=8.1.12215.0, Culture=neutral, PublicKeyToken=221650e173990c07, processorArchitecture=MSIL">
-      <HintPath>..\packages\BitMiracle.Docotic.Pdf.8.1.12215\lib\net46\BitMiracle.Docotic.Pdf.dll</HintPath>
+    <Reference Include="BitMiracle.Docotic.Pdf, Version=8.8.14015.0, Culture=neutral, PublicKeyToken=221650e173990c07, processorArchitecture=MSIL">
+      <HintPath>..\packages\BitMiracle.Docotic.Pdf.8.8.14015\lib\net46\BitMiracle.Docotic.Pdf.dll</HintPath>
     </Reference>
     <Reference Include="G1ANT.Language, Version=4.108.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\G1ANT.Language.4.108.0\lib\net452\G1ANT.Language.dll</HintPath>
@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Windows.Forms" />
@@ -66,11 +67,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Addon.cs" />
-    <Compile Include="PdfCompareCommand.cs" />
-    <Compile Include="PdfExtractTextCommand.cs" />
-    <Compile Include="PdfRemovePageCommand.cs" />
-    <Compile Include="PdfAddPageCommand.cs" />
-    <Compile Include="PdfSaveCommand.cs" />
+    <Compile Include="Commands\PdfDrawTextCommand.cs" />
+    <Compile Include="Commands\PdfCompareCommand.cs" />
+    <Compile Include="Commands\PdfCreateCommand.cs" />
+    <Compile Include="Commands\PdfDrawImageCommand.cs" />
+    <Compile Include="Commands\PdfDrawLineCommand.cs" />
+    <Compile Include="Commands\PdfExtractImagesCommand.cs" />
+    <Compile Include="Commands\PdfExtractTextCommand.cs" />
+    <Compile Include="Commands\PdfMovePageCommand.cs" />
+    <Compile Include="Commands\PdfRemovePageCommand.cs" />
+    <Compile Include="Commands\PdfAddPageCommand.cs" />
+    <Compile Include="Commands\PdfSaveCommand.cs" />
+    <Compile Include="Commands\PdfSwapPagesCommand.cs" />
+    <Compile Include="Models\PdfFontModel.cs" />
+    <Compile Include="Models\PdfModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -85,8 +95,10 @@
     </EmbeddedResource>
     -->
     <None Include="packages.config" />
-    <Compile Include="PdfOpenCommand.cs" />
-    <Compile Include="PdfStructure.cs" />
+    <Compile Include="Commands\PdfOpenCommand.cs" />
+    <Compile Include="Structures\PdfFontStructure.cs" />
+    <Compile Include="Structures\PdfPageStructure.cs" />
+    <Compile Include="Structures\PdfStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -99,9 +111,12 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\packages\*\lib\net40\BitMiracle.Docotic.Pdf.dll">
+    <EmbeddedResource Include="..\packages\*\lib\net46\BitMiracle.Docotic.Pdf.dll">
       <Link>BitMiracle.Docotic.Pdf.dll</Link>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

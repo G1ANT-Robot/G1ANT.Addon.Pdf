@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using G1ANT.Language;
 using BitMiracle.Docotic.Pdf;
 
-namespace G1ANT.Addon.PDF
+namespace G1ANT.Addon.Pdf
 {
     [Command(Name = "pdf.removepage", Tooltip = "Removes given page")]
     public class PdfRemovePageCommand : Command
@@ -17,30 +17,28 @@ namespace G1ANT.Addon.PDF
 
         public class Arguments : CommandArguments
         {
-            [Argument(Name = "pdf", Required = true, Tooltip = "PDF structure from which the given page will be removed")]
+            [Argument(Required = true, Tooltip = "PDF structure from which the given page will be removed")]
             public PdfStructure Pdf { get; set; }
 
-            [Argument(Name = "pagenumber", Required = true, Tooltip = "Page to remove. Starting from 1")]
+            [Argument(Required = true, Tooltip = "Page to be removed")]
             public IntegerStructure PageNumber { get; set; }
         }
 
         public void Execute(Arguments arguments)
         {
-            var pdf = arguments.Pdf.Value;
-            int pdfPageCount = pdf.PageCount;
-
-            int pageToRemove = arguments.PageNumber.Value - 1;
-            if (arguments.PageNumber.Value <= 0)
+            var pdf = arguments.Pdf?.Value;
+            if (pdf is null)
+                throw new ArgumentNullException(nameof(arguments.Pdf));
+            var pdfPageCount = pdf.PageCount;
+            if (arguments.PageNumber.Value < 1)
             {
                 throw new ArgumentException("Page number can't be smaller than 1");
             }
-            else if (arguments.PageNumber.Value > pdfPageCount)
+            else if (arguments.PageNumber.Value >= pdfPageCount)
             {
                 throw new ArgumentException("Page number can't be bigger than number of pages");
-            } else
-            {
-                pdf.RemovePage(pageToRemove);
-            }
+            } 
+            pdf.RemovePage(arguments.PageNumber.Value - 1);
         }
     }
 }
