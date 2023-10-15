@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using BitMiracle.Docotic.Pdf;
 using static G1ANT.Language.RobotMessage32;
+using static G1ANT.Language.RobotWin32;
 
 namespace G1ANT.Addon.PDF.Models
 {
@@ -21,11 +24,18 @@ namespace G1ANT.Addon.PDF.Models
         public PdfModel(PdfDocument pdfDocument)
         {
             this.pdfDocument = pdfDocument;
+            SetUpDocoticLicense();
         }
         
         public PdfModel() 
         {
             pdfDocument = new PdfDocument();
+            SetUpDocoticLicense();
+        }
+
+        private void SetUpDocoticLicense()
+        {
+            BitMiracle.Docotic.LicenseManager.AddLicenseData("A74K7-4VGJW-T60RT-IIEXT-P5UHP");
         }
 
         public static PdfModel Open(string filename, string password = null)
@@ -60,6 +70,13 @@ namespace G1ANT.Addon.PDF.Models
             pdfDocument.Save(filename, saveOptions);
         }
 
+        private int FromG1PageIndex(int value)
+        {
+              if (value < 1 || value > PageCount)
+                throw new ArgumentOutOfRangeException($"Page index need to be in range 1-{PageCount}");
+            return value - 1;
+        }
+
         public void SavePageAsImage(string filename)
         {
             if (!IsDocumentCorrect)
@@ -74,6 +91,8 @@ namespace G1ANT.Addon.PDF.Models
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            srcIndex = FromG1PageIndex(srcIndex);
+            dstIndex = FromG1PageIndex(dstIndex);
             pdfDocument.MovePage(srcIndex, dstIndex);
         }
 
@@ -82,6 +101,8 @@ namespace G1ANT.Addon.PDF.Models
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            firstIndex = FromG1PageIndex(firstIndex);
+            secondIndex = FromG1PageIndex(secondIndex);
             pdfDocument.SwapPages(firstIndex, secondIndex);
         }
 
@@ -90,18 +111,28 @@ namespace G1ANT.Addon.PDF.Models
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            index = FromG1PageIndex(index);
             pdfDocument.RemovePage(index);
         }
 
-        public void AddPage(int? index = null)
+        public void AddPage(int? index = null, string orientation = "Portrait")
         {
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            if (!Enum.TryParse<PdfPaperOrientation>(orientation, out var pageOrientation))
+                throw new ApplicationException($"{orientation} is not correct page orientation");
+
+            PdfPage newPage = null;
             if (index.HasValue)
-                pdfDocument.InsertPage(index.Value);
+            {
+                var page = FromG1PageIndex(index.Value);
+                newPage = pdfDocument.InsertPage(page);
+            }
             else
-                pdfDocument.AddPage();
+                newPage = pdfDocument.AddPage();
+            if (newPage != null)
+                newPage.Orientation = pageOrientation;
         }
 
         public void DrawText(int pageIndex, Point point, string text, PdfFontModel font = null)
@@ -109,6 +140,7 @@ namespace G1ANT.Addon.PDF.Models
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            pageIndex = FromG1PageIndex(pageIndex);
             var page = pdfDocument.GetPage(pageIndex);
             var canvas = page.Canvas;
 
@@ -126,21 +158,57 @@ namespace G1ANT.Addon.PDF.Models
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            pageIndex = FromG1PageIndex(pageIndex);
             var page = pdfDocument.GetPage(pageIndex);
             var canvas = page.Canvas;
             canvas.CurrentPosition = new PdfPoint(from.X, from.Y);
             canvas.DrawLineTo(new PdfPoint(to.X, to.Y));
         }
 
-        public void DrawImage(int pageIndex, Point point, string imageFilename)
+        private Size FitSizeWithin(Size inner, Size outer)
+        {
+            var innerAspectRatio = inner.Width / (float)inner.Height;
+            var outerAspectRatio = outer.Width / (float)outer.Height;
+
+            var resizeFactor = (innerAspectRatio >= outerAspectRatio) ?
+                (outer.Width / (float)inner.Width) : (outer.Height / (float)inner.Height);
+
+            var newWidth = inner.Width * resizeFactor;
+            var newHeight = inner.Height * resizeFactor;
+            return new Size((int)newWidth, (int)newHeight);
+        }
+
+        private Size CalculateImageSize(PdfImage image, Rectangle rectangle, PdfImageScaleMode scaleMode)
+        {
+            switch (scaleMode)
+            {
+                case PdfImageScaleMode.NeverScale:
+                    break;
+                case PdfImageScaleMode.AlwaysScale:
+                    return FitSizeWithin(new Size(image.Width, image.Height), rectangle.Size);
+                case PdfImageScaleMode.ScaleWhenImageBigger:
+                    if (image.Width > rectangle.Width || image.Height > rectangle.Height)
+                        return FitSizeWithin(new Size(image.Width, image.Height), rectangle.Size);
+                    break;
+                case PdfImageScaleMode.ScaleWhenImageSmaller:
+                    if (image.Width < rectangle.Width || image.Height < rectangle.Height)
+                        return FitSizeWithin(new Size(image.Width, image.Height), rectangle.Size);
+                    break;
+            }
+            return new Size(image.Width, image.Height);
+        }
+
+        public void DrawImage(int pageIndex, Rectangle rect, string imageFilename, PdfImageScaleMode scaleMode)
         {
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
 
+            pageIndex = FromG1PageIndex(pageIndex);
             var image = pdfDocument.AddImage(imageFilename);
             var page = pdfDocument.GetPage(pageIndex);
             var canvas = page.Canvas;
-            canvas.DrawImage(image, new PdfPoint(point.X, point.Y));
+            var size = CalculateImageSize(image, rect, scaleMode);
+            canvas.DrawImage(image, new PdfPoint(rect.X, rect.Y), new PdfSize(size.Width, size.Height), 0);
         }
 
         public void ExtractImages(string folder, string filenamePrefix)
@@ -156,17 +224,17 @@ namespace G1ANT.Addon.PDF.Models
             }
         }
 
-        public string ExtractText(int pageIndex = -1)
+        public string ExtractText(int? pageIndex = null)
         {
             return ExtractText(pageIndex, false);
         }
 
-        public string ExtractTextWithFormatting(int pageIndex = -1)
+        public string ExtractTextWithFormatting(int? pageIndex = null)
         {
             return ExtractText(pageIndex, true);
         }
 
-        private string ExtractText(int pageIndex = -1, bool withFormatting = false)
+        private string ExtractText(int? pageIndex = null, bool withFormatting = false)
         {
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
@@ -175,9 +243,10 @@ namespace G1ANT.Addon.PDF.Models
             {
                 WithFormatting = withFormatting
             };
-            if (pageIndex >= 0)
+            if (pageIndex != null && pageIndex >= 0)
             {
-                var page = pdfDocument.GetPage(pageIndex);
+                var pageNo = FromG1PageIndex(pageIndex.Value);
+                var page = pdfDocument.GetPage(pageNo);
                 return page.GetText(options);
             }
             else

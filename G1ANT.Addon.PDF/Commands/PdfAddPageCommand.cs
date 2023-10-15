@@ -19,6 +19,9 @@ namespace G1ANT.Addon.Pdf
         {
             [Argument(Required = true, Tooltip = "PDF structure to which a new page will be added")]
             public PdfStructure Pdf { get; set; }
+
+            [Argument(Required = true, Tooltip = "Page orientations (Portrait, Landscape)")]
+            public TextStructure Orientation { get; set; } = new TextStructure("Portrait");
         }
 
         public void Execute(Arguments arguments)
@@ -26,7 +29,7 @@ namespace G1ANT.Addon.Pdf
             var pdf = arguments.Pdf?.Value;
             if (pdf is null)
                 throw new ArgumentNullException(nameof(arguments.Pdf));
-            pdf.AddPage();
+            pdf.AddPage(orientation: arguments.Orientation?.Value);
         }
     }
 }

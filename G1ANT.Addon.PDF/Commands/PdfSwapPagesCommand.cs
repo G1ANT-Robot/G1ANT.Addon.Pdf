@@ -33,7 +33,7 @@ namespace G1ANT.Addon.Pdf
             if (pdf is null)
                 throw new ArgumentNullException(nameof(arguments.Pdf));
 
-            pdf.MovePage(arguments.Page1.Value, arguments.Page2.Value);
+            pdf.SwapPages(arguments.Page1.Value, arguments.Page2.Value);
         }
     }
 }

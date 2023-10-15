@@ -35,8 +35,8 @@ namespace G1ANT.Addon.Pdf
             var pdf = arguments.Pdf?.Value;
             if (pdf is null)
                 throw new ArgumentNullException(nameof(arguments.Pdf));
-            var text = arguments.WithFormatting.Value ? pdf.ExtractTextWithFormatting(arguments.Page.Value) 
-                : pdf.ExtractText(arguments.Page.Value);
+            var text = arguments.WithFormatting.Value ? pdf.ExtractTextWithFormatting(arguments.Page?.Value) 
+                : pdf.ExtractText(arguments.Page?.Value);
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new TextStructure(text, null, Scripter));
         }
     }

@@ -9,7 +9,7 @@ using G1ANT.Addon.PDF.Models;
 
 namespace G1ANT.Addon.Pdf
 {
-    [Structure(Name = "pdfpage", AutoCreate = false, Tooltip = "PDF structure for maintaining pdf files")]
+    [Structure(Name = "pdfpage", Tooltip = "PDF structure for maintaining pdf files")]
     public class PdfPageStructure : StructureTyped<PdfPage>
     {
         private static class IndexNames
