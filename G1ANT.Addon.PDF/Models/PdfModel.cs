@@ -5,9 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using BitMiracle.Docotic.Pdf;
+using Org.BouncyCastle.Asn1.Pkcs;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static G1ANT.Language.RobotMessage32;
 using static G1ANT.Language.RobotWin32;
+using Tesseract;
 
 namespace G1ANT.Addon.PDF.Models
 {
@@ -243,14 +247,53 @@ namespace G1ANT.Addon.PDF.Models
             {
                 WithFormatting = withFormatting
             };
-            if (pageIndex != null && pageIndex >= 0)
+            var pagesRange = pageIndex != null && pageIndex >= 0 
+                ? Enumerable.Range(FromG1PageIndex(pageIndex.Value), 1)
+                : Enumerable.Range(0, pdfDocument.PageCount);
+
+            var documentText = new StringBuilder();
+            foreach (var pageNo in pagesRange)
             {
-                var pageNo = FromG1PageIndex(pageIndex.Value);
+                if (documentText.Length > 0)
+                    documentText.Append("\r\n");
                 var page = pdfDocument.GetPage(pageNo);
-                return page.GetText(options);
+                var searchableText = page.GetText(options);
+                if (!string.IsNullOrEmpty(searchableText.Trim()))
+                {
+                    documentText.Append(searchableText);
+                }
+                else
+                {
+                    documentText.Append(ExtractTextWithOCR(pageNo, withFormatting));
+                }
             }
-            else
-                return pdfDocument.GetText(options);
+            return documentText.ToString();
+        }
+
+        private string ExtractTextWithOCR(int pageNo, bool withFormatting = false)
+        {
+            var options = PdfDrawOptions.Create();
+            options.BackgroundColor = new PdfRgbColor(255, 255, 255);
+            options.HorizontalResolution = 300;
+            options.VerticalResolution = 300;
+
+            var page = pdfDocument.GetPage(pageNo);
+            using (var pageImage = new MemoryStream())
+            {
+                page.Save(pageImage, options);
+
+                var tessdata_path = OcrOfflineHelper.OcrModelsFolder;
+                using (var engine = new TesseractEngine(tessdata_path, "eng", EngineMode.Default))
+                {
+                    using (Pix img = Pix.LoadFromMemory(pageImage.GetBuffer()))
+                    {
+                        using (var recognizedPage = engine.Process(img))
+                        {
+                            return recognizedPage.GetText();
+                        }
+                    }
+                }
+            }
         }
 
         static public bool IsPasswordProtected(string filename)

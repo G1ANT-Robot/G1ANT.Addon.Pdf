@@ -1,6 +1,8 @@
-﻿using G1ANT.Language;
+﻿using G1ANT.Addon.PDF;
+using G1ANT.Language;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -29,6 +31,7 @@ namespace G1ANT.Addon.Pdf
             // but you can load here some additional dlls:
 
             // Assembly.Load("...")
+            OcrOfflineHelper.UnpackNeededAssemblies();
         }
 
         public override void Initialize()
