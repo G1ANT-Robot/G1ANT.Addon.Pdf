@@ -119,6 +119,15 @@ namespace G1ANT.Addon.PDF.Models
             pdfDocument.RemovePage(index);
         }
 
+        public PdfModel ExtractPages(int[] pageIndexes)
+        {
+            if (!IsDocumentCorrect)
+                throw new ApplicationException("Pdf documernt is not correct");
+
+            var indexes = pageIndexes.Select(x => FromG1PageIndex(x));
+            return new PdfModel(pdfDocument.ExtractPages(indexes.ToArray()));
+        }
+
         public void AddPage(int? index = null, string orientation = "Portrait")
         {
             if (!IsDocumentCorrect)

@@ -78,6 +78,7 @@
     <Compile Include="Commands\PdfDrawImageCommand.cs" />
     <Compile Include="Commands\PdfDrawLineCommand.cs" />
     <Compile Include="Commands\PdfExtractImagesCommand.cs" />
+    <Compile Include="Commands\PdfExtractPagesCommand.cs" />
     <Compile Include="Commands\PdfExtractTextCommand.cs" />
     <Compile Include="Commands\PdfMovePageCommand.cs" />
     <Compile Include="Commands\PdfRemovePageCommand.cs" />
