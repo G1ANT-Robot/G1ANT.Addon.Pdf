@@ -125,7 +125,7 @@ namespace G1ANT.Addon.PDF.Models
                 throw new ApplicationException("Pdf documernt is not correct");
 
             var indexes = pageIndexes.Select(x => FromG1PageIndex(x));
-            return new PdfModel(pdfDocument.ExtractPages(indexes.ToArray()));
+            return new PdfModel(pdfDocument.CopyPages(indexes.ToArray()));
         }
 
         public void AddPage(int? index = null, string orientation = "Portrait")
