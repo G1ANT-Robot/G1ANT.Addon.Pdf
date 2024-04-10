@@ -1,14 +1,16 @@
-﻿using G1ANT.Language;
+﻿using G1ANT.Addon.PDF;
+using G1ANT.Language;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 // Please remember to refresh G1ANT.Language.dll in references
 
-namespace G1ANT.Addon.PDF
+namespace G1ANT.Addon.Pdf
 {
-    [Addon(Name = "AddonPDF", Tooltip = "Addon for mantaining PDF files")]
+    [Addon(Name = "PDF", Tooltip = "Addon for mantaining PDF files")]
     [Copyright(Author = "G1ANT LTD", Copyright = "G1ANT LTD", Email = "hi@g1ant.com", Website = "www.g1ant.com")]
     [License(Type = "LGPL", ResourceName = "License.txt")]
     //[CommandGroup(Name = "", Tooltip = "")]
@@ -29,6 +31,7 @@ namespace G1ANT.Addon.PDF
             // but you can load here some additional dlls:
 
             // Assembly.Load("...")
+            OcrOfflineHelper.UnpackNeededAssemblies();
         }
 
         public override void Initialize()
