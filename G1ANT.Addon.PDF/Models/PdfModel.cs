@@ -237,17 +237,17 @@ namespace G1ANT.Addon.PDF.Models
             }
         }
 
-        public string ExtractText(int? pageIndex = null)
+        public string ExtractText(int? pageIndex = null, string ocrLanguage = "eng")
         {
-            return ExtractText(pageIndex, false);
+            return ExtractText(pageIndex, false, ocrLanguage);
         }
 
-        public string ExtractTextWithFormatting(int? pageIndex = null)
+        public string ExtractTextWithFormatting(int? pageIndex = null, string ocrLanguage = "eng")
         {
-            return ExtractText(pageIndex, true);
+            return ExtractText(pageIndex, true, ocrLanguage);
         }
 
-        private string ExtractText(int? pageIndex = null, bool withFormatting = false)
+        private string ExtractText(int? pageIndex = null, bool withFormatting = false, string ocrLanguage = "eng")
         {
             if (!IsDocumentCorrect)
                 throw new ApplicationException("Pdf documernt is not correct");
@@ -273,14 +273,17 @@ namespace G1ANT.Addon.PDF.Models
                 }
                 else
                 {
-                    documentText.Append(ExtractTextWithOCR(pageNo, withFormatting));
+                    documentText.Append(ExtractTextWithOCR(pageNo, withFormatting, ocrLanguage));
                 }
             }
             return documentText.ToString();
         }
 
-        private string ExtractTextWithOCR(int pageNo, bool withFormatting = false)
+        private string ExtractTextWithOCR(int pageNo, bool withFormatting = false, string ocrLanguage = "eng")
         {
+            if (string.IsNullOrEmpty(ocrLanguage))
+                return string.Empty;
+
             var options = PdfDrawOptions.Create();
             options.BackgroundColor = new PdfRgbColor(255, 255, 255);
             options.HorizontalResolution = 300;
@@ -292,7 +295,7 @@ namespace G1ANT.Addon.PDF.Models
                 page.Save(pageImage, options);
 
                 var tessdata_path = OcrOfflineHelper.OcrModelsFolder;
-                using (var engine = new TesseractEngine(tessdata_path, "eng", EngineMode.Default))
+                using (var engine = new TesseractEngine(tessdata_path, ocrLanguage, EngineMode.Default))
                 {
                     using (Pix img = Pix.LoadFromMemory(pageImage.GetBuffer()))
                     {

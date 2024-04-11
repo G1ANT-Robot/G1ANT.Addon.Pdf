@@ -26,6 +26,9 @@ namespace G1ANT.Addon.Pdf
             [Argument(Required = true, Tooltip = "Extract text with formatting")]
             public BooleanStructure WithFormatting { get; set; } = new BooleanStructure(true);
 
+            [Argument(Required = true, Tooltip = "Language for OCR module")]
+            public TextStructure OcrLanguage { get; set; } = new TextStructure("eng");
+
             [Argument(Required = false, Tooltip = "Result where extracted text will be stored")]
             public VariableStructure Result { get; set; } = new VariableStructure("result");
         }
@@ -35,9 +38,19 @@ namespace G1ANT.Addon.Pdf
             var pdf = arguments.Pdf?.Value;
             if (pdf is null)
                 throw new ArgumentNullException(nameof(arguments.Pdf));
-            var text = arguments.WithFormatting.Value ? pdf.ExtractTextWithFormatting(arguments.Page?.Value) 
-                : pdf.ExtractText(arguments.Page?.Value);
+            var ocrLang = arguments.OcrLanguage.Value;
+            var text = arguments.WithFormatting.Value ? pdf.ExtractTextWithFormatting(arguments.Page?.Value, ocrLang) 
+                : pdf.ExtractText(arguments.Page?.Value, ocrLang);
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new TextStructure(text, null, Scripter));
         }
+
+        private string GetScriptVariable(string name)
+        {
+            var variable = Scripter.Variables.GetAttributedVariables().Where((v) => { return v.Name == name; }).FirstOrDefault();
+            if (variable?.GetValue("")?.Object is string str)
+                return str;
+            return null;
+        }
+
     }
 }
