@@ -279,6 +279,19 @@ namespace G1ANT.Addon.PDF.Models
             return documentText.ToString();
         }
 
+        private static TesseractEngine GetTesseractEngine(string language, bool with_formatting)
+        {
+            var tessdata_path = OcrOfflineHelper.OcrModelsFolder;
+            if (with_formatting)
+            {
+                var initVars = new Dictionary<string, object>() { { "preserve_interword_spaces", true }, };
+                return new TesseractEngine(tessdata_path, language, EngineMode.Default, new string[0], initVars, false);
+
+            }
+            else
+                return new TesseractEngine(tessdata_path, language, EngineMode.Default);
+        }
+
         private string ExtractTextWithOCR(int pageNo, bool withFormatting = false, string ocrLanguage = "eng")
         {
             if (string.IsNullOrEmpty(ocrLanguage))
@@ -294,8 +307,7 @@ namespace G1ANT.Addon.PDF.Models
             {
                 page.Save(pageImage, options);
 
-                var tessdata_path = OcrOfflineHelper.OcrModelsFolder;
-                using (var engine = new TesseractEngine(tessdata_path, ocrLanguage, EngineMode.Default))
+                using (var engine = GetTesseractEngine(ocrLanguage, withFormatting))
                 {
                     using (Pix img = Pix.LoadFromMemory(pageImage.GetBuffer()))
                     {
