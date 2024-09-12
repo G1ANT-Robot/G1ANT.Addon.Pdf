@@ -31,13 +31,23 @@ namespace G1ANT.Addon.Pdf
                 throw new ArgumentNullException(nameof(arguments.Pdf));
             if (arguments.Pages?.Value is null)
                 throw new ArgumentNullException(nameof(arguments.Pages));
-            if (arguments.Pages.ListItemType != typeof(int) &&
-                arguments.Pages.ListItemType != typeof(IntegerStructure))
-                throw new ArgumentException("Pages need to be integers", nameof(arguments.Pages));
 
-            var pages = arguments.Pages?.Value?.Select(x => (int)x).ToArray();
+            var pages = ListToIntArray(arguments.Pages?.Value);
             var newpdf = pdf.ExtractPages(pages);
             Scripter.Variables.SetVariableValue(arguments.Result.Value, new PdfStructure(newpdf, null, Scripter));
+        }
+
+        protected int[] ListToIntArray(List<object> list)
+        {
+            var result = new List<int>();
+            foreach (var item in list)
+            {
+                if (int.TryParse(item?.ToString(), out var value))
+                    result.Add(value);
+                else
+                    throw new ArgumentException("Pages need to be integers");
+            }
+            return result.ToArray();
         }
     }
 }
