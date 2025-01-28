@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Addon.cs" />
+    <Compile Include="Commands\PdfAppendPdfCommand.cs" />
     <Compile Include="Commands\PdfDrawTextCommand.cs" />
     <Compile Include="Commands\PdfCompareCommand.cs" />
     <Compile Include="Commands\PdfCreateCommand.cs" />

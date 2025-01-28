@@ -17,7 +17,7 @@ namespace G1ANT.Addon.PDF.Models
 {
     public class PdfModel
     {
-        private PdfDocument pdfDocument;
+        protected PdfDocument pdfDocument;
 
         private bool IsDocumentCorrect => pdfDocument is null ? false : true;
 
@@ -74,7 +74,7 @@ namespace G1ANT.Addon.PDF.Models
             pdfDocument.Save(filename, saveOptions);
         }
 
-        private int FromG1PageIndex(int value)
+        protected int FromG1PageIndex(int value)
         {
               if (value < 1 || value > PageCount)
                 throw new ArgumentOutOfRangeException($"Page index need to be in range 1-{PageCount}");
@@ -277,6 +277,30 @@ namespace G1ANT.Addon.PDF.Models
                 }
             }
             return documentText.ToString();
+        }
+
+        public void AppendDocument(PdfModel otherPdf, List<int> pagesToAppend = null)
+        {
+            if (!IsDocumentCorrect || !otherPdf.IsDocumentCorrect)
+                throw new ApplicationException("Pdf documernt is not correct");
+
+            using (var streamToAppend = new MemoryStream())
+            {
+                var pdfToAppend = otherPdf.pdfDocument;
+                if (pagesToAppend != null && pagesToAppend.Count > 0)
+                {
+                    var pages = pagesToAppend.Select(x => otherPdf.FromG1PageIndex(x)).ToList();
+                    pdfToAppend = otherPdf.pdfDocument.CopyPages(pages.ToArray());
+                }
+                var options = new PdfSaveOptions
+                {
+                    UseObjectStreams = false
+                };
+                pdfToAppend.Save(streamToAppend, options);
+
+                pdfDocument.Append(streamToAppend);
+                pdfDocument.ReplaceDuplicateObjects();
+            }
         }
 
         private static TesseractEngine GetTesseractEngine(string language, bool with_formatting)
