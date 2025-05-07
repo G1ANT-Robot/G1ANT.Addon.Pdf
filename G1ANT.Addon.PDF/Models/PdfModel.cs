@@ -74,6 +74,175 @@ namespace G1ANT.Addon.PDF.Models
             pdfDocument.Save(filename, saveOptions);
         }
 
+        public void Compress(bool removeDuplicateObjects, bool compressImages, bool removeUnusedFonts, bool removeMetadata,
+            bool removeStructureInformation, bool removeUnusedResources, bool removeApplicationData, bool flattenControls,
+            double? compressImagesMaxRatio = null)
+        {
+            if (!IsDocumentCorrect)
+                throw new ApplicationException("Pdf documernt is not correct");
+
+            if (removeDuplicateObjects)
+                pdfDocument.ReplaceDuplicateObjects();
+            if (compressImages)
+                OptimizeImages(compressImagesMaxRatio);
+            if (removeUnusedFonts)
+                pdfDocument.RemoveUnusedFontGlyphs();
+            if (removeMetadata)
+            {
+                XmpMetadata xmp = pdfDocument.Metadata;
+                xmp.Unembed();
+                pdfDocument.Info.Clear(false);
+            }
+            if (removeStructureInformation)
+                pdfDocument.RemoveStructureInformation();
+            if (removeUnusedResources)
+                pdfDocument.RemoveUnusedResources();
+            if (removeApplicationData)
+                pdfDocument.RemovePieceInfo();
+            if (flattenControls)
+                pdfDocument.FlattenControls();
+        }
+
+        private void OptimizeImages(double? compressImagesMaxRatio = null)
+        {
+            var alreadyCompressedImageIds = new HashSet<string>();
+            for (int i = 0; i < pdfDocument.PageCount; ++i)
+            {
+                var page = pdfDocument.Pages[i];
+                foreach (var painted in page.GetPaintedImages())
+                {
+                    var image = painted.Image;
+
+                    // Image ID may be null for inline images, which cannot be recompressed
+                    if (image.Id == null)
+                        continue;
+
+                    if (alreadyCompressedImageIds.Contains(image.Id))
+                        continue;
+
+                    if (OptimizeImage(painted, compressImagesMaxRatio))
+                        alreadyCompressedImageIds.Add(image.Id);
+                }
+            }
+        }
+
+        private static bool OptimizeImage(PdfPaintedImage painted, double? compressImagesMaxRatio = null)
+        {
+            var image = painted.Image;
+
+            // inline images cannot be recompressed unless you move them to resources
+            // using PdfCanvas.MoveInlineImagesToResources
+            if (image.IsInline)
+                return false;
+
+            // mask images are not good candidates for recompression
+            if (image.IsMask || image.Width < 8 || image.Height < 8)
+                return false;
+
+            // get size of the painted image
+            var width = Math.Max(1, (int)painted.Bounds.Width);
+            var height = Math.Max(1, (int)painted.Bounds.Height);
+
+            // calculate resize ratio
+            var ratio = Math.Min(image.Width / (double)width, image.Height / (double)height);
+
+            if (ratio <= 1)
+            {
+                // the image size is smaller than the painted size
+                return RecompressImage(image);
+            }
+
+            if (ratio < 1.1)
+            {
+                // with the ratio this small, the potential size
+                // reduction rarely justifies resizing artefacts
+                return false;
+            }
+
+            if (image.Compression == PdfImageCompression.Group4Fax ||
+                image.Compression == PdfImageCompression.Group3Fax ||
+                image.Compression == PdfImageCompression.JBig2 ||
+                (image.ComponentCount == 1 && image.BitsPerComponent == 1))
+            {
+                return ResizeBilevelImage(image, ratio);
+            }
+
+            if (compressImagesMaxRatio.HasValue)
+                ratio = Math.Min(ratio, compressImagesMaxRatio.Value);
+            var resizedWidth = (int)Math.Floor(image.Width / ratio);
+            var resizedHeight = (int)Math.Floor(image.Height / ratio);
+            if ((image.ComponentCount >= 3 && image.BitsPerComponent == 8) || IsGrayJpeg(image))
+            {
+                image.ResizeTo(resizedWidth, resizedHeight, PdfImageCompression.Jpeg, 90);
+                // or image.ResizeTo(resizedWidth, resizedHeight, PdfImageCompression.Jpeg2000, 10);
+            }
+            else
+            {
+                image.ResizeTo(resizedWidth, resizedHeight, PdfImageCompression.Flate, 9);
+            }
+
+            return true;
+        }
+
+        private static bool IsGrayJpeg(PdfImage image)
+        {
+            var isJpegCompressed = image.Compression == PdfImageCompression.Jpeg ||
+                image.Compression == PdfImageCompression.Jpeg2000;
+            return isJpegCompressed && image.ComponentCount == 1 && image.BitsPerComponent == 8;
+        }
+
+        private static bool RecompressImage(PdfImage image)
+        {
+            if (image.ComponentCount == 1 &&
+                image.BitsPerComponent == 1 &&
+                image.Compression == PdfImageCompression.Group3Fax)
+            {
+                image.RecompressWithGroup4Fax();
+                return true;
+            }
+
+            if (image.BitsPerComponent == 8 &&
+                image.ComponentCount >= 3 &&
+                image.Compression != PdfImageCompression.Jpeg &&
+                image.Compression != PdfImageCompression.Jpeg2000)
+            {
+                if (image.Width < 64 && image.Height < 64)
+                {
+                    // JPEG better preserves detail on smaller images
+                    image.RecompressWithJpeg();
+                }
+                else
+                {
+                    // you can try a larger compressio ratio for bigger images
+                    image.RecompressWithJpeg2000(10);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool ResizeBilevelImage(PdfImage image, double ratio)
+        {
+            // Fax documents usually look better if integer-ratio scaling is used
+            // Fractional-ratio scaling introduces more artifacts
+            var intRatio = (int)ratio;
+
+            // decrease the ratio when it is too high
+            if (intRatio > 3)
+                intRatio = Math.Min(intRatio - 2, 3);
+
+            if (intRatio == 1 && image.Compression == PdfImageCompression.Group4Fax)
+            {
+                // skipping the image, because the output size and compression are the same
+                return false;
+            }
+
+            image.ResizeTo(image.Width / intRatio, image.Height / intRatio, PdfImageCompression.Group4Fax);
+            return true;
+        }
+
         protected int FromG1PageIndex(int value)
         {
               if (value < 1 || value > PageCount)
