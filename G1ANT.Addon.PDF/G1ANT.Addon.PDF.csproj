@@ -84,6 +84,7 @@
     <Compile Include="Commands\PdfMovePageCommand.cs" />
     <Compile Include="Commands\PdfRemovePageCommand.cs" />
     <Compile Include="Commands\PdfAddPageCommand.cs" />
+    <Compile Include="Commands\PdfOptimizeCommand.cs" />
     <Compile Include="Commands\PdfSaveCommand.cs" />
     <Compile Include="Commands\PdfSwapPagesCommand.cs" />
     <Compile Include="Models\PdfFontModel.cs" />
